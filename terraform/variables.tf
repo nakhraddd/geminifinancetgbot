@@ -12,7 +12,7 @@ variable "region" {
 variable "zone" {
   description = "The GCP zone to deploy to."
   type        = string
-  default     = "europe-central2-a"
+  default     = "europe-west4"
 }
 
 variable "instance_name" {
