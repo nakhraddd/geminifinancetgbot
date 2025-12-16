@@ -72,7 +72,7 @@ jobs:
 
       - name: Debug Deployment
         run: |
-          # SSH into the box and wait for setup
+          # SSH into the box
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 gcp-user@${{ needs.terraform.outputs.instance_ip }} << 'EOF'
             set -e
             timeout=300
@@ -84,8 +84,6 @@ jobs:
             while [ ! -d "/app" ]; do
               if [ $elapsed -ge $timeout ]; then
                 echo "❌ TIMEOUT: Startup script failed."
-                echo "👇👇👇 HERE IS THE ERROR LOG 👇👇👇"
-                # This prints the specific error from the Google Startup Script
                 sudo journalctl -u google-startup-scripts.service --no-pager -n 50
                 exit 1
               fi
@@ -94,7 +92,17 @@ jobs:
               elapsed=$((elapsed+10))
             done
 
-            echo "✅ Startup script finished successfully."
+            echo "✅ Startup script finished."
+
+            # --- THE FIX IS HERE ---
+            # 1. Change ownership of /app from 'root' to 'gcp-user'
+            #    This fixes the "dubious ownership" error AND ensures your bot can write to its own folder.
+            echo "Fixing permissions..."
+            sudo chown -R gcp-user:gcp-user /app
+            
+            # 2. Mark directory as safe for git (extra safety measure)
+            git config --global --add safe.directory /app
+            # -----------------------
 
             # Now we can safely deploy
             cd /app
