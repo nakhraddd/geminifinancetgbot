@@ -43,10 +43,6 @@ resource "google_compute_instance" "default" {
     apt-get update
     apt-get install -y git python3 python3-pip
 
-    # Create a non-root user and grant sudo
-    useradd -m -s /bin/bash gcp-user
-    echo "gcp-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
     # Clone the repository
     git clone ${var.repo_url} /app
 
