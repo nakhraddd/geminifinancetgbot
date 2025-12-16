@@ -39,17 +39,25 @@ resource "google_compute_instance" "default" {
     #!/bin/bash
     set -e
 
-    # Install dependencies
+    # 1. Wait for any automatic system updates to finish (prevents locking errors)
+    echo "Waiting for apt locks..."
+    while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do sleep 1; done
+    while fuser /var/lib/apt/lists/lock >/dev/null 2>&1 ; do sleep 1; done
+
+    # 2. Install dependencies
     apt-get update
     apt-get install -y git python3 python3-pip
 
-    # Clone the repository
+    # 3. Clone the repository
+    # Remove existing /app if it exists (fixes re-run issues)
+    rm -rf /app
     git clone ${var.repo_url} /app
 
-    # Install Python dependencies
-    pip3 install -r /app/requirements.txt
+    # 4. Install Python dependencies
+    # ERROR FIX: Debian 12 requires '--break-system-packages' for system-wide pip
+    pip3 install -r /app/requirements.txt --break-system-packages
 
-    # Create systemd service
+    # 5. Create systemd service
     cat <<EOT > /etc/systemd/system/telegram-bot.service
     [Unit]
     Description=Telegram Bot
@@ -66,7 +74,7 @@ resource "google_compute_instance" "default" {
     WantedBy=multi-user.target
     EOT
 
-    # Enable and start the service
+    # 6. Enable and start the service
     systemctl daemon-reload
     systemctl enable telegram-bot.service
     systemctl start telegram-bot.service

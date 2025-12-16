@@ -60,45 +60,42 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Wait for SSH to be ready
+      - name: Debug Deployment
         run: |
-          echo "Waiting for VM to initialize SSH..."
-          timeout 300 bash -c 'until nc -z -v -w5 ${{ needs.terraform.outputs.instance_ip }} 22; do echo "Waiting for SSH on port 22..."; sleep 5; done'
-          # Give it a few extra seconds for the SSH Daemon to fully load keys after the port opens
-          sleep 10
-
-      - name: Deploy and Restart
-        run: |
+          # SSH into the box and wait for setup
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 gcp-user@${{ needs.terraform.outputs.instance_ip }} << 'EOF'
             set -e
-
-            echo "Checking for startup script completion..."
-            
-            # 1. Wait up to 5 minutes for the /app directory to be created by the startup script
             timeout=300
             elapsed=0
+            
+            echo "Checking if startup script is done..."
+            
+            # Loop until /app exists
             while [ ! -d "/app" ]; do
               if [ $elapsed -ge $timeout ]; then
-                echo "Timeout: /app directory was not created after 300 seconds."
+                echo "❌ TIMEOUT: Startup script failed."
+                echo "👇👇👇 HERE IS THE ERROR LOG 👇👇👇"
+                # This prints the specific error from the Google Startup Script
+                sudo journalctl -u google-startup-scripts.service --no-pager -n 50
                 exit 1
               fi
-              echo "Waiting for startup script to clone repo... (${elapsed}s elapsed)"
+              echo "Waiting for startup script... (${elapsed}s elapsed)"
               sleep 10
               elapsed=$((elapsed+10))
             done
 
-            echo "Startup script appears finished. /app exists."
+            echo "✅ Startup script finished successfully."
 
-            # 2. Now it is safe to proceed
+            # Now we can safely deploy
             cd /app
             git pull
             
-            # 3. Wait for the systemd service to be registered (startup script creates this file last)
+            # Wait for service registration
             while ! sudo systemctl list-unit-files | grep -q telegram-bot.service; do
-              echo "Waiting for telegram-bot service to be registered..."
-              sleep 5
+              echo "Waiting for service registration..."
+              sleep 2
             done
 
-            echo "Restarting service..."
+            echo "Restarting Bot..."
             sudo systemctl restart telegram-bot
           EOF
