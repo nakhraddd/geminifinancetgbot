@@ -5,6 +5,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from src.agent.agent import AccountingAgent
+from src.utils.firestore_client import store_conversation
 
 # Telegram's maximum message length
 TELEGRAM_MAX_MESSAGE_LENGTH = 4096
@@ -65,6 +66,7 @@ async def fraud_check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     agent = get_user_agent(chat_id)
     response_data = agent.check_fraud(user_query, web_content)
     response_text = response_data.get('response', 'Извините, при обработке вашего запроса произошла ошибка.')
+    store_conversation(chat_id, user_query, response_text)
     
     # Escape the response text for MarkdownV2
     safe_response_text = escape_markdown_v2(response_text)
@@ -91,6 +93,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     agent = get_user_agent(chat_id)
     response_data = agent.answer(user_query)
     response_text = response_data.get('response', 'Извините, при обработке вашего запроса произошла ошибка.')
+    store_conversation(chat_id, user_query, response_text)
 
     # Escape the response text for MarkdownV2
     safe_response_text = escape_markdown_v2(response_text)
