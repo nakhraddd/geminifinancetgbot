@@ -60,6 +60,16 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Wait for SSH to be ready
+        run: |
+          echo "Waiting for VM to initialize SSH..."
+          # Loop until port 22 is open (max 5 minutes)
+          timeout 300 bash -c 'until nc -z -v -w5 ${{ needs.terraform.outputs.instance_ip }} 22; do echo "Waiting for SSH..."; sleep 5; done'
+          
+          # CRITICAL: Even after port 22 opens, the SSH daemon needs a few seconds 
+          # to load the keys and accept connections.
+          sleep 15
+
       - name: Debug Deployment
         run: |
           # SSH into the box and wait for setup
