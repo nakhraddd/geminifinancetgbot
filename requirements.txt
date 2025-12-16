@@ -18,4 +18,4 @@ jsonschema>=4.17.0
 markdown>=3.4.0
 weasyprint>=59.0
 python-telegram-bot
-google-cloud-firestore
+google-cloud-firestore>=2.0.0
