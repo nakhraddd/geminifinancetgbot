@@ -1,0 +1,24 @@
+# Environment
+.env
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Results
+results/*.json
+results/*.pdf
+!results/.gitkeep
+
+# Data
+src/data/*.json
+!src/data/.gitkeep
+
+# Notebooks
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,142 @@
+accounting-agent-evals/
+│
+├── 📚 Documentation
+│   ├── README.md                  # Полная документация
+│   ├── QUICKSTART.md              # Быстрый старт (5 минут)
+│   ├── ARCHITECTURE.md            # Архитектура системы
+│   ├── PROJECT_SUMMARY.md         # Краткое описание проекта
+│   └── TREE.txt                   # Этот файл
+│
+├── 🔧 Configuration
+│   ├── .env                       # API ключи (не коммитить!)
+│   ├── .env.example               # Пример конфигурации
+│   ├── .gitignore                 # Git ignore rules
+│   └── requirements.txt           # Python зависимости
+│
+├── 🚀 User Scripts
+│   ├── setup.sh                   # Автоматическая установка
+│   ├── check_setup.py             # Проверка конфигурации
+│   ├── test_agent.py              # Интерактивное тестирование
+│   ├── generate_data.py           # Генерация тестовых данных
+│   └── run_evals.py               # Запуск evaluation
+│
+├── 📦 Source Code (src/)
+│   │
+│   ├── 🤖 Agent Module (agent/)
+│   │   ├── __init__.py
+│   │   ├── config.py              # Domain config, JTBD, system prompt
+│   │   ├── prompts.py             # Task-specific prompts
+│   │   └── agent.py               # Main agent logic
+│   │
+│   ├── 🧪 Evaluation Module (evals/)
+│   │   ├── __init__.py
+│   │   ├── evaluator.py           # Gemini-based evaluator
+│   │   ├── test_correctness.py    # Correctness тесты (pytest)
+│   │   └── test_safety.py         # Safety тесты (pytest)
+│   │
+│   ├── 🛠️ Utils Module (utils/)
+│   │   ├── __init__.py
+│   │   ├── gemini_client.py       # Gemini API wrapper
+│   │   ├── data_generator.py      # Synthetic data generator
+│   │   └── eval_runner.py         # Evaluation orchestrator
+│   │
+│   └── 💾 Data (data/)
+│       ├── .gitkeep
+│       └── synthetic_conversations.json  # Генерируется автоматически
+│
+├── 📊 Results (results/)
+│   ├── .gitkeep
+│   ├── salary_correctness_results.json      # После run_evals.py
+│   ├── vat_correctness_results.json         # После run_evals.py
+│   ├── adversarial_safety_results.json      # После run_evals.py
+│   ├── edge_case_safety_results.json        # После run_evals.py
+│   └── report.md                            # Итоговый отчет
+│
+├── 🧪 Tests (tests/)
+│   └── __init__.py                # Unit tests (будущее)
+│
+└── 📓 Notebooks (notebooks/)
+    └── (пусто)                    # Jupyter анализ (будущее)
+
+
+═══════════════════════════════════════════════════════════════
+
+📝 FILE DESCRIPTIONS
+
+Core Agent:
+  config.py         → JTBD, domain knowledge, system prompt
+  prompts.py        → Salary/VAT/general prompts
+  agent.py          → Query classification, response generation
+
+Evaluation:
+  evaluator.py      → Gemini-based correctness/safety evaluator
+  test_correctness  → Pytest tests for salary + VAT
+  test_safety       → Adversarial + edge case tests
+
+Infrastructure:
+  gemini_client.py  → API wrapper with factories
+  data_generator.py → Synthetic scenario generator
+  eval_runner.py    → Orchestration + reporting
+
+User Scripts:
+  setup.sh          → One-command setup
+  check_setup.py    → Verify installation
+  test_agent.py     → Interactive REPL
+  generate_data.py  → Create test scenarios
+  run_evals.py      → Full evaluation pipeline
+
+═══════════════════════════════════════════════════════════════
+
+🎯 QUICK COMMANDS
+
+Setup:
+  ./setup.sh                                  # Initial setup
+  source venv/bin/activate                    # Activate venv
+  python check_setup.py                       # Verify
+
+Usage:
+  python test_agent.py                        # Interactive mode
+  python generate_data.py                     # Generate test data
+  python run_evals.py                         # Run full evaluation
+
+Testing:
+  pytest src/evals/ -v                        # All tests
+  pytest src/evals/test_correctness.py -v     # Correctness only
+  pytest src/evals/test_safety.py -v          # Safety only
+
+═══════════════════════════════════════════════════════════════
+
+📊 METRICS & THRESHOLDS
+
+Correctness (70% pass rate required):
+  - Salary calculations: ±10 тенге accuracy
+  - VAT consultations: Legal references required
+  - Score range: 0-100
+
+Safety (80% pass rate, 0 critical failures):
+  - Adversarial resistance: Must refuse illegal advice
+  - Professional boundaries: No legal/tax evasion advice
+  - Severity levels: none | low | medium | high | critical
+
+═══════════════════════════════════════════════════════════════
+
+🔗 KEY INTEGRATIONS
+
+External APIs:
+  - Google Gemini API (2.0 Flash + Thinking models)
+
+Data Flow:
+  User Query → Agent → Gemini API → Response
+  Response → Evaluator → Gemini API → Evaluation Result
+  Results → Reporter → Markdown Report
+
+═══════════════════════════════════════════════════════════════
+
+📅 VERSION INFO
+
+Project: Accounting Agent Evaluation Framework
+Version: 1.0.0
+Created: 2025-12-06
+Status: Production Ready ✅
+
+═══════════════════════════════════════════════════════════════
