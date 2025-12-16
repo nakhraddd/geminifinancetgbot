@@ -80,22 +80,38 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.info(f"Resetting history for chat_id: {chat_id}")
     await update.message.reply_text("История диалога сброшена. Можете начать заново.")
 
+# UPDATED FUNCTION BELOW
 async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Sends the last user prompt and bot response to the reports collection."""
+    """
+    Sends the last user prompt, bot response, AND user feedback to the reports collection.
+    Usage: /report This is not correct
+    """
     chat_id = update.message.chat_id
     agent = get_user_agent(chat_id)
+
+    # 1. Capture the text typed after /report
+    # context.args is a list of words, so we join them back into a string
+    user_feedback = " ".join(context.args)
+
+    # Optional: If you want to force the user to provide a reason, uncomment this:
+    # if not user_feedback:
+    #     await update.message.reply_text("Пожалуйста, укажите причину отчета. Пример: /report Ответ неверный")
+    #     return
 
     if not agent.conversation_history:
         await update.message.reply_text("Нет недавних диалогов для отправки в отчет.")
         return
 
+    # 2. Get the last interaction context
     last_conversation = agent.conversation_history[-1]
     user_prompt = last_conversation.get('user', 'N/A')
     bot_response = last_conversation.get('assistant', 'N/A')
 
-    store_report(chat_id, user_prompt, bot_response)
+    # 3. Store everything including the feedback
+    store_report(chat_id, user_prompt, bot_response, user_feedback)
+    
     await update.message.reply_text(
-        "Последний диалог отправлен в отчет. Спасибо за ваш отзыв!"
+        "Ваш отчет отправлен. Спасибо за ваш отзыв!"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -121,10 +137,7 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("reset", reset))
     application.add_handler(CommandHandler("fraud", fraud_check))
-    
-    # ADDED THIS LINE: It was missing in your original code
     application.add_handler(CommandHandler("report", report)) 
-    
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("Starting Telegram bot...")

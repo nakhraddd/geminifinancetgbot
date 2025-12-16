@@ -44,9 +44,10 @@ def store_conversation(chat_id: int, user_query: str, bot_response: str):
     except Exception as e:
         logger.error(f"Error storing conversation for chat_id {chat_id}: {e}")
 
-def store_report(chat_id: int, user_query: str, bot_response: str):
+# UPDATED FUNCTION BELOW
+def store_report(chat_id: int, user_query: str, bot_response: str, user_feedback: str):
     """
-    Stores a user prompt and bot response as a report in a Firestore collection.
+    Stores a user prompt, bot response, and user feedback as a report.
     """
     if db is None:
         logger.warning("Firestore client not initialized. Cannot store report.")
@@ -60,9 +61,10 @@ def store_report(chat_id: int, user_query: str, bot_response: str):
             'chat_id': str(chat_id),
             'reported_query': user_query,
             'reported_response': bot_response,
+            'user_feedback': user_feedback, # <-- Saved here
             'timestamp': firestore.SERVER_TIMESTAMP
         })
-        logger.info(f"Report stored for chat_id {chat_id}.")
+        logger.info(f"Report stored for chat_id {chat_id} with feedback.")
     except Exception as e:
         logger.error(f"Error storing report for chat_id {chat_id}: {e}")
 
