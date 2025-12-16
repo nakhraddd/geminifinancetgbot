@@ -1,7 +1,6 @@
 # 🏗️ Architecture Overview
 
 ## System Architecture
-
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    ACCOUNTING AGENT EVAL SYSTEM                  │

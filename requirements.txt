@@ -17,3 +17,4 @@ jsonschema>=4.17.0
 
 markdown>=3.4.0
 weasyprint>=59.0
+python-telegram-bot --upgrade
