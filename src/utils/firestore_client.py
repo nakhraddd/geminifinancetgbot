@@ -44,5 +44,27 @@ def store_conversation(chat_id: int, user_query: str, bot_response: str):
     except Exception as e:
         logger.error(f"Error storing conversation for chat_id {chat_id}: {e}")
 
+def store_report(chat_id: int, user_query: str, bot_response: str):
+    """
+    Stores a user prompt and bot response as a report in a Firestore collection.
+    """
+    if db is None:
+        logger.warning("Firestore client not initialized. Cannot store report.")
+        return
+
+    try:
+        collection_ref = db.collection('reports')
+        doc_ref = collection_ref.document() # Let Firestore generate a unique ID
+
+        doc_ref.set({
+            'chat_id': str(chat_id),
+            'reported_query': user_query,
+            'reported_response': bot_response,
+            'timestamp': firestore.SERVER_TIMESTAMP
+        })
+        logger.info(f"Report stored for chat_id {chat_id}.")
+    except Exception as e:
+        logger.error(f"Error storing report for chat_id {chat_id}: {e}")
+
 # Call initialize_firestore when this module is imported
 initialize_firestore()
