@@ -55,7 +55,7 @@ resource "google_compute_instance" "default" {
 
     # 4. Install Python dependencies
     # ERROR FIX: Debian 12 requires '--break-system-packages' for system-wide pip
-    pip3 install -r /app/requirements.txt --break-system-packages
+    pip3 install --upgrade -r /app/requirements.txt --break-system-packages
 
     # 5. Create systemd service
     cat <<EOT > /etc/systemd/system/telegram-bot.service
