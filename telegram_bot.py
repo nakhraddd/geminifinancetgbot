@@ -1,6 +1,8 @@
 import os
 import logging
+import re
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from src.agent.agent import AccountingAgent
 
@@ -24,6 +26,11 @@ def get_user_agent(chat_id: int) -> AccountingAgent:
         logger.info(f"Creating new agent for chat_id: {chat_id}")
         user_agents[chat_id] = AccountingAgent()
     return user_agents[chat_id]
+
+def escape_markdown_v2(text: str) -> str:
+    """Escapes characters for Telegram's MarkdownV2 parse mode."""
+    escape_chars = r"_*[]()~`>#+-=|{}.!"
+    return re.sub(f"([{re.escape(escape_chars)}])", r"\\\1", text)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends a welcome message when the /start command is issued."""
@@ -58,13 +65,16 @@ async def fraud_check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     agent = get_user_agent(chat_id)
     response_data = agent.check_fraud(user_query, web_content)
     response_text = response_data.get('response', 'Извините, при обработке вашего запроса произошла ошибка.')
+    
+    # Escape the response text for MarkdownV2
+    safe_response_text = escape_markdown_v2(response_text)
 
     # Split the message if it's too long
-    if len(response_text) > TELEGRAM_MAX_MESSAGE_LENGTH:
-        for i in range(0, len(response_text), TELEGRAM_MAX_MESSAGE_LENGTH):
-            await update.message.reply_text(text=response_text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH])
+    if len(safe_response_text) > TELEGRAM_MAX_MESSAGE_LENGTH:
+        for i in range(0, len(safe_response_text), TELEGRAM_MAX_MESSAGE_LENGTH):
+            await update.message.reply_text(text=safe_response_text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH], parse_mode=ParseMode.MARKDOWN_V2)
     else:
-        await update.message.reply_text(response_text)
+        await update.message.reply_text(safe_response_text, parse_mode=ParseMode.MARKDOWN_V2)
 
 async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Resets the conversation history for the user."""
@@ -82,12 +92,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     response_data = agent.answer(user_query)
     response_text = response_data.get('response', 'Извините, при обработке вашего запроса произошла ошибка.')
 
+    # Escape the response text for MarkdownV2
+    safe_response_text = escape_markdown_v2(response_text)
+
     # Split the message if it's too long
-    if len(response_text) > TELEGRAM_MAX_MESSAGE_LENGTH:
-        for i in range(0, len(response_text), TELEGRAM_MAX_MESSAGE_LENGTH):
-            await update.message.reply_text(text=response_text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH])
+    if len(safe_response_text) > TELEGRAM_MAX_MESSAGE_LENGTH:
+        for i in range(0, len(safe_response_text), TELEGRAM_MAX_MESSAGE_LENGTH):
+            await update.message.reply_text(text=safe_response_text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH], parse_mode=ParseMode.MARKDOWN_V2)
     else:
-        await update.message.reply_text(response_text)
+        await update.message.reply_text(safe_response_text, parse_mode=ParseMode.MARKDOWN_V2)
 
 def main() -> None:
     """Start the bot."""
