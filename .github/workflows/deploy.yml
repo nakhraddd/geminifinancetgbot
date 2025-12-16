@@ -30,7 +30,11 @@ jobs:
 
       - name: Import Existing VM (Temporary Step - REMOVE AFTER 1st SUCCESS)
         run: |
-          terraform -chdir=terraform import google_compute_instance.default ${{ secrets.GCP_PROJECT_ID }}/europe-central2-a/telegram-bot-instance || echo "Import step finished. This may fail if the resource is already in the state, which is expected."
+          terraform -chdir=terraform import \
+            -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+            -var="repo_url=https://github.com/${{ github.repository }}" \
+            google_compute_instance.default ${{ secrets.GCP_PROJECT_ID }}/europe-central2-a/telegram-bot-instance || echo "Import step finished. This may fail if the resource is already in the state, which is expected."
 
       - name: Terraform Plan
         run: terraform -chdir=terraform plan -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" -var="repo_url=https://github.com/${{ github.repository }}"
