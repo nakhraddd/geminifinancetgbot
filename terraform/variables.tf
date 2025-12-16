@@ -44,3 +44,8 @@ variable "ssh_public_key" {
   type        = string
   sensitive   = true
 }
+
+variable "repo_url" {
+  description = "The URL of the git repository to clone."
+  type        = string
+}

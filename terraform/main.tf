@@ -48,7 +48,7 @@ resource "google_compute_instance" "default" {
     echo "gcp-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
     # Clone the repository
-    git clone https://github.com/${{ github.repository }}.git /app
+    git clone ${var.repo_url} /app
 
     # Install Python dependencies
     pip3 install -r /app/requirements.txt
