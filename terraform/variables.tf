@@ -24,7 +24,7 @@ variable "instance_name" {
 variable "machine_type" {
   description = "The machine type for the VM."
   type        = string
-  default     = "e2-small"
+  default     = "e2-medium"
 }
 
 variable "image_project" {
