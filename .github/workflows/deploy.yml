@@ -77,21 +77,27 @@ jobs:
             timeout=300
             elapsed=0
             
-            echo "Checking if startup script is done..."
+            echo "Checking if startup script is TRULY done..."
             
-            # Loop until /app exists
-            while [ ! -d "/app" ]; do
+            # --- IMPROVED CHECK ---
+            # We wait for the SERVICE FILE, not just the folder.
+            # This guarantees the script reached the end.
+            while [ ! -f "/etc/systemd/system/telegram-bot.service" ]; do
               if [ $elapsed -ge $timeout ]; then
-                echo "❌ TIMEOUT: Startup script failed."
+                echo "❌ TIMEOUT: Startup script crashed or hung."
+                echo "🔎 DUMPING ERROR LOGS:"
+                echo "------------------------------------------------"
+                # This reveals exactly why it failed (e.g. pip error)
                 sudo journalctl -u google-startup-scripts.service --no-pager -n 50
+                echo "------------------------------------------------"
                 exit 1
               fi
-              echo "Waiting for startup script... (${elapsed}s elapsed)"
+              echo "Waiting for service file creation... (${elapsed}s elapsed)"
               sleep 10
               elapsed=$((elapsed+10))
             done
 
-            echo "✅ Startup script finished."
+            echo "✅ Startup script finished successfully."
 
             # Fix permissions
             echo "Fixing permissions..."
@@ -102,17 +108,11 @@ jobs:
             cd /app
             git pull
             
-            # --- CHANGED SECTION START ---
-            # Don't wait. Force systemd to see the file.
-            echo "Reloading systemd daemon..."
+            # Reload and Start
+            echo "Reloading systemd..."
             sudo systemctl daemon-reload
-            
-            echo "Ensuring service is enabled..."
             sudo systemctl enable telegram-bot
-
-            echo "Restarting Bot..."
             sudo systemctl restart telegram-bot
-            # --- CHANGED SECTION END ---
             
             echo "🚀 Deployment Successful!"
           EOF
