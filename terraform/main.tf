@@ -80,5 +80,19 @@ resource "google_compute_instance" "default" {
     scopes = ["cloud-platform"]
   }
 
-  tags = ["http-server", "https-server"] # Add any tags you need
+  tags = ["http-server", "https-server", "ssh"] # Add any tags you need
 }
+
+resource "google_compute_firewall" "allow-ssh" {
+  name    = "tf-allow-ssh"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ssh"]
+}
+
